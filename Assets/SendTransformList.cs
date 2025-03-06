@@ -12,6 +12,9 @@ public class SendTransformList : MonoBehaviour
         AED,
     }
 
+    [Tooltip("Coordinate system to use for sending transforms.")]
+    public Transform ReferenceTransform;
+
     public CoordinateSystem coordinateSystem = CoordinateSystem.XYZ;
 
     private float lastUpdateTime;
@@ -59,7 +62,7 @@ public class SendTransformList : MonoBehaviour
         {
             for (int i = 0; i < transforms.Length; i++)
             {
-                sendOSCMessage.SendTransformAsAED(transforms[i], this.transform, i, i);
+                sendOSCMessage.SendTransformAsAED(transforms[i], ReferenceTransform ?? this.transform, i, i);
             }
         }
     }

@@ -2,10 +2,13 @@ using System.Collections.Generic;
 using OscCore;
 using UnityEngine;
 
+// This class is responsible for sending OSC messages of various types
 public class SendOSCMessage : MonoBehaviour
 {
+    // OSC address to send messages to
     public string address = "text";
 
+    // The OscSender component used to send OSC messages, if not assigned in the inspector, it will search for one in the scene
     public OscSender oscSender;
 
     // Awake is called when the script instance is being loaded
@@ -15,6 +18,8 @@ public class SendOSCMessage : MonoBehaviour
         {
             oscSender = FindFirstObjectByType<OscSender>();
         }
+
+        // None was found
         if (oscSender == null)
         {
             Debug.LogError("No OscSender found in the scene.");
@@ -26,6 +31,7 @@ public class SendOSCMessage : MonoBehaviour
     {
         Debug.Log($"Sending OSC message to {address}: {message}");
         
+        // Special handling for specific types
         if (message is int intValue)
             oscSender.Client.Send(address, intValue);
         else if (message is long longValue)
@@ -81,6 +87,10 @@ public class SendOSCMessage : MonoBehaviour
     public void SendColor(Color message) => Send(address, message);
     public void SendFloatAsInt(float message) => Send(address, (int)message);
 
+    /// <summary>
+    /// Send a list of Vector3s as OSC messages in xyz format.
+    /// </summary>
+    /// <param name="message">Coordinates to send</param>
     public void SendXYZVectors(Vector3[] message) {
         if (message.Length == 0)
             return;
@@ -100,6 +110,12 @@ public class SendOSCMessage : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Send a Transform as an OSC message in xyz format.
+    /// </summary>
+    /// <param name="message">Transform to send</param>
+    /// <param name="index">Index to assign transform's point</param>
+    /// <param name="group">Group to assign transform's point</param> 
     public void SendTransformAsXYZ(Transform message, int index, int group = 0){
         if (message == null)
             return;
@@ -117,19 +133,37 @@ public class SendOSCMessage : MonoBehaviour
         oscSender.Client.SendCustomFormat(address, ",sifffi", values);
     }
 
+    /// <summary>
+    /// Send a Transform as an OSC message in xyz format. It will be sent with index 0 and group 0.
+    /// </summary>
+    /// <param name="message">Transform to send</param>
     public void SendTransformAsXYZ(Transform message){
         SendTransformAsXYZ(message, 0);
     }
 
-    public void SendTransformAsAED(Transform message, Transform reference, int index, int group = 0){
+    /// <summary>
+    /// Send a Transform as an OSC message in AED format with coordinates relative to a reference transform.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="reference">Reference transform to </param>
+    /// <param name="index"></param>
+    /// <param name="group"></param>
+    public void SendTransformAsAED(Transform message, Transform reference = null, int index = 0, int group = 0){
         if (message == null || reference == null)
             return;
-            
+
+        if (reference == null)
+            reference = this.transform;
+
+        // Calculate the difference vector from the reference transform to the message transform            
         Vector3 difference = message.position - reference.position;
         float distance = difference.magnitude;
-        Vector3 normalizedDifference = difference.normalized;
-        float azimuth = Mathf.Atan2(difference.x, difference.z) * Mathf.Rad2Deg;
-        float elevation = Mathf.Asin(normalizedDifference.y) * Mathf.Rad2Deg;
+        // Transform the difference vector to the reference transform's local space
+        Vector3 localDifference = reference.InverseTransformDirection(difference).normalized;
+        
+        // Calculate azimuth and elevation in the reference transform's coordinate system
+        float azimuth = Mathf.Atan2(localDifference.x, localDifference.z) * Mathf.Rad2Deg;
+        float elevation = Mathf.Asin(localDifference.normalized.y) * Mathf.Rad2Deg;
 
         List<object> values = new List<object>
         {
