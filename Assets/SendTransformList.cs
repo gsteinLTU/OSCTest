@@ -32,6 +32,11 @@ public class SendTransformList : MonoBehaviour
         {
             Debug.LogError("No SendOSCMessage component found.");
         }
+
+        if (ReferenceTransform == null)
+        {
+            ReferenceTransform = this.transform;
+        }
     }
 
     // Update is called once per frame
@@ -56,13 +61,13 @@ public class SendTransformList : MonoBehaviour
         {
             for (int i = 0; i < transforms.Length; i++)
             {
-                sendOSCMessage.SendTransformAsXYZ(transforms[i], i, i);
+                sendOSCMessage.SendTransformAsXYZ(transforms[i], i + 1, i);
             }
         } else if (coordinateSystem == CoordinateSystem.AED)
         {
             for (int i = 0; i < transforms.Length; i++)
             {
-                sendOSCMessage.SendTransformAsAED(transforms[i], ReferenceTransform ?? this.transform, i, i);
+                sendOSCMessage.SendTransformAsAED(transforms[i], ReferenceTransform ?? this.transform, i + 1, i);
             }
         }
     }

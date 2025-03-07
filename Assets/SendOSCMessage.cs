@@ -100,7 +100,7 @@ public class SendOSCMessage : MonoBehaviour
             List<object> values = new List<object>
             {
                 "xyz",
-                i,
+                i + 1,
                 message[i].x,
                 message[i].z,
                 message[i].y,
@@ -148,7 +148,7 @@ public class SendOSCMessage : MonoBehaviour
     /// <param name="reference">Reference transform to </param>
     /// <param name="index"></param>
     /// <param name="group"></param>
-    public void SendTransformAsAED(Transform message, Transform reference = null, int index = 0, int group = 0){
+    public void SendTransformAsAED(Transform message, Transform reference = null, int index = 1, int group = 0){
         if (message == null || reference == null)
             return;
 
